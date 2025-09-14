@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "779419040180",
+    "firebase_url": "https://bhandaraapp-79f29-default-rtdb.firebaseio.com",
+    "project_id": "bhandaraapp-79f29",
+    "storage_bucket": "bhandaraapp-79f29.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:779419040180:android:a7c466c56bcebc59d55ae1",
+        "android_client_info": {
+          "package_name": "com.rituraj.bhandaraapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTOqGPxR5k9FMIPXxt5H0uS-BJp0QDhJ8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

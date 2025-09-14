@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">BhandaraApp</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="default_web_client_id">779419040180-44gcratu9mqmt97v6oipv2sjdl7si42j.apps.googleusercontent.com</string>
+</resources>
