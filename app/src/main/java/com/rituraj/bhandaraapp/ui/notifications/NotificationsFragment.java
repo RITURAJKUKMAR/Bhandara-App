@@ -22,9 +22,9 @@ public class NotificationsFragment extends Fragment {
                 new ViewModelProvider(this).get(NotificationsViewModel.class);
 
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+        View view = binding.getRoot();
 
-        return root;
+        return view;
     }
 
     @Override

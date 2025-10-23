@@ -12,18 +12,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SearchView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -35,7 +34,6 @@ import com.rituraj.bhandaraapp.adapters.ShowProjects;
 import com.rituraj.bhandaraapp.databinding.FragmentHomeBinding;
 import com.rituraj.bhandaraapp.locations.LocationManager;
 import com.rituraj.bhandaraapp.locations.PermissionManager;
-import com.rituraj.bhandaraapp.ui.pages.UploadPage;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -51,16 +49,20 @@ public class HomeFragment extends Fragment {
     private DatabaseReference reference;
     private ProgressDialog progressDialog;
     private RecyclerView recyclerView;
-    private ArrayList<Project> projects;
+    private ArrayList<Project> projects, filterProjectList;
+    private ShowProjects cartRecycleView;
     private String searchData;
     public static String lat, lng;
+    private View view;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         HomeViewModel homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+        setHasOptionsMenu(true);
 
+        this.view = root;
         fun(root);
         takeUserLocation();
         fetchUserLocation();
@@ -75,7 +77,7 @@ public class HomeFragment extends Fragment {
 
     public void fun(View view) {
         projects = new ArrayList<>();
-
+        filterProjectList = new ArrayList<>();
         database = FirebaseDatabase.getInstance();
 
         progressDialog = new ProgressDialog(requireContext());
@@ -84,14 +86,18 @@ public class HomeFragment extends Fragment {
         progressDialog.show();
 
 
-        SearchView searchText = view.findViewById(R.id.searchText);
-
+        SearchView searchText = view.findViewById(R.id.searchProject);
         searchText.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 Toast.makeText(requireContext(), query, Toast.LENGTH_SHORT).show();
                 searchData = query;
-                getAllProjects(view);
+                filterProjectList.clear();
+                for (Project p : projects) {
+                    if (isPresent(p))
+                        filterProjectList.add(p);
+                }
+                showFilterProducts(view);
                 return false;
             }
 
@@ -99,7 +105,7 @@ public class HomeFragment extends Fragment {
             public boolean onQueryTextChange(String newText) {
                 if (newText.isEmpty()) {
                     searchData = null;
-                    getAllProjects(view);
+                    showAllProducts(view);
                 }
                 return false;
             }
@@ -108,40 +114,52 @@ public class HomeFragment extends Fragment {
     }
 
     public void getAllProjects(View view) {
+        showAllProducts(view);
         reference = database.getReference("Projects");
+        reference.keepSynced(true);
         reference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                progressDialog.dismiss();
-                projects.clear();
-                final int[] processed = {0};
-                int totalChildren = (int) snapshot.getChildrenCount();
-                for (DataSnapshot snap : snapshot.getChildren()) {
-                    long now = System.currentTimeMillis();
-                    String projectId = snap.getKey();
-                    Project project = snap.getValue(Project.class);
-
-                    if (project.getCreatedAt() != null && (now - Long.parseLong("" + project.getCreatedAt())) >= 24 * 60 * 60 * 1000) {
-                        snap.getRef().removeValue();
-                    } else if (searchData != null) {
-                        if (isPresent(project))
-                            projects.add(project);
-                    } else
-                        projects.add(project);
-
-                    processed[0]++;
-                    findProject(projectId, () -> {
-                        if (processed[0] == totalChildren) {
-                            showAllProducts(view);
-                        }
-                    });
-                }
+                if (progressDialog.isShowing()) progressDialog.dismiss();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                progressDialog.dismiss();
-                Toast.makeText(requireContext(), "You didn't upload any Projects!", Toast.LENGTH_SHORT).show();
+                if (progressDialog.isShowing()) progressDialog.dismiss();
+            }
+        });
+        reference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                if (progressDialog.isShowing()) progressDialog.dismiss();
+                Project project = snapshot.getValue(Project.class);
+                if (project != null) {
+                    project.setProjectId(snapshot.getKey());
+                    long now = System.currentTimeMillis();
+                    if (project.getCreatedAt() != null && (now - Long.parseLong("" + project.getCreatedAt())) >= 24 * 60 * 60 * 1000) {
+                        snapshot.getRef().removeValue();
+                    }
+                    projects.add(project);
+                    cartRecycleView.notifyItemInserted(projects.size() - 1);
+                }
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                if (progressDialog.isShowing()) progressDialog.dismiss();
+                Toast.makeText(requireContext(), "Something went wrong!", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -151,36 +169,23 @@ public class HomeFragment extends Fragment {
         return fullData.toLowerCase().contains(searchData.toLowerCase());
     }
 
-    public void findProject(String projectId, Runnable onFinish) {
-        DatabaseReference myRef = database.getReference("Projects");
-        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snap) {
-                String email = snap.child("email").getValue(String.class);
-                if (onFinish != null) {
-                    onFinish.run();
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                if (onFinish != null) {
-                    onFinish.run();
-                }
-                Toast.makeText(requireContext(), "You didn't upload any product!", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
     public void showAllProducts(View view) {
         recyclerView = view.findViewById(R.id.projectListHome);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        ShowProjects cartRecycleView = new ShowProjects(requireContext(), projects);
+        cartRecycleView = new ShowProjects(requireContext(), projects);
         recyclerView.setAdapter(cartRecycleView);
     }
 
+    public void showFilterProducts(View view) {
+        recyclerView = view.findViewById(R.id.projectListHome);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        cartRecycleView = new ShowProjects(requireContext(), filterProjectList);
+        recyclerView.setAdapter(cartRecycleView);
+    }
 
     // for location
     public void takeUserLocation() {
@@ -236,8 +241,6 @@ public class HomeFragment extends Fragment {
     BroadcastReceiver foregroundLocationBroadCastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-//            Toast.makeText(requireContext(),
-//                    intent.getStringExtra("location"), Toast.LENGTH_SHORT).show();
             String l = intent.getStringExtra("Lat");
             String ln = intent.getStringExtra("Lng");
             lat = l;

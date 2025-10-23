@@ -1,7 +1,7 @@
 package com.rituraj.bhandaraapp.Models;
 
 public class User {
-    private String userId, userName, email, profileUrl;
+    private String userId, userName, email, profileUrl, notificationToken;
 
     public User() {
     }
@@ -49,5 +49,13 @@ public class User {
 
     public void setProfileUrl(String profileUrl) {
         this.profileUrl = profileUrl;
+    }
+
+    public String getNotificationToken() {
+        return notificationToken;
+    }
+
+    public void setNotificationToken(String notificationToken) {
+        this.notificationToken = notificationToken;
     }
 }

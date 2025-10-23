@@ -13,7 +13,20 @@
           "package_name": "com.rituraj.bhandaraapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "779419040180-3qb2s7m0bdf8isuvvj7oh07807qkq5km.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rituraj.bhandaraapp",
+            "certificate_hash": "6e32a4bc5b89d39bd83b0033d2c84eec2ae0470a"
+          }
+        },
+        {
+          "client_id": "779419040180-44gcratu9mqmt97v6oipv2sjdl7si42j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCTOqGPxR5k9FMIPXxt5H0uS-BJp0QDhJ8"
@@ -21,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "779419040180-44gcratu9mqmt97v6oipv2sjdl7si42j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

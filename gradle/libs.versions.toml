@@ -1,5 +1,5 @@
 [versions]
-agp = "8.10.1"
+agp = "8.13.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
@@ -15,6 +15,9 @@ googleGmsGoogleServices = "4.4.3"
 firebaseAi = "17.2.0"
 legacySupportV4 = "1.0.0"
 firebaseMessaging = "25.0.0"
+navigationFragmentVersion = "2.4.2"
+navigationUiVersion = "2.9.5"
+androidxNavigationFragment = "2.9.5"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -31,6 +34,9 @@ activity = { group = "androidx.activity", name = "activity", version.ref = "acti
 firebase-ai = { group = "com.google.firebase", name = "firebase-ai", version.ref = "firebaseAi" }
 legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
+androidx-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "navigationFragmentVersion" }
+androidx-navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUiVersion" }
+androidx-navigation-navigation-fragment = { group = "androidx.navigation", name = "navigation-fragment", version.ref = "androidxNavigationFragment" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

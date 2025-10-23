@@ -1,5 +1,7 @@
 package com.rituraj.bhandaraapp.ui.pages;
 
+import static androidx.core.content.ContextCompat.startActivity;
+
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,13 +23,15 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthCredential;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.rituraj.bhandaraapp.MainActivity;
 import com.rituraj.bhandaraapp.Models.User;
 import com.rituraj.bhandaraapp.R;
 import com.rituraj.bhandaraapp.databinding.ActivityLoginPageBinding;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public class LoginPage extends AppCompatActivity {
     private ActivityLoginPageBinding binding;
@@ -40,8 +44,11 @@ public class LoginPage extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+        } catch (Exception ignored) {
+        }
         EdgeToEdge.enable(this);
-//        setContentView(R.layout.activity_login_page);
         binding = ActivityLoginPageBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         getSupportActionBar().hide();
@@ -51,6 +58,7 @@ public class LoginPage extends AppCompatActivity {
             return insets;
         });
         fun();
+//        navigateToNotificationProjectPage();
     }
 
     public void fun() {
@@ -118,5 +126,16 @@ public class LoginPage extends AppCompatActivity {
                         Toast.makeText(LoginPage.this, "Login Failed!", Toast.LENGTH_SHORT).show();
                     progressDialog.dismiss();
                 });
+    }
+
+    public void navigateToNotificationProjectPage() {
+        if (getIntent().getExtras() != null) {
+            String title = getIntent().getExtras().getString("title");
+            String message = getIntent().getExtras().getString("message");
+            Intent intent = new Intent(LoginPage.this, ProjectPage.class);
+            intent.putExtra("title", title);
+            intent.putExtra("message", message);
+            startActivity(intent);
+        }
     }
 }
